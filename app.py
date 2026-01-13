@@ -5,17 +5,18 @@ import subprocess
 
 app = Flask(__name__)
 
-# Mot de passe haché (sécurisé)
+# Mot de passe sécurisé (haché)
 ADMIN_PASSWORD_HASH = generate_password_hash("123456")
 
-def hash_password(password):
+# Vérification du mot de passe
+def verify_password(password):
     return check_password_hash(ADMIN_PASSWORD_HASH, password)
 
 @app.route("/login")
 def login():
     username = request.args.get("username")
     password = request.args.get("password")
-    if username == "admin" and hash_password(password):
+    if username == "admin" and verify_password(password):
         return "Logged in"
     return "Invalid credentials"
 
@@ -23,7 +24,7 @@ def login():
 def ping():
     host = request.args.get("host", "localhost")
     try:
-        # Subprocess sécurisé
+        # Subprocess sécurisé sans shell=True
         result = subprocess.check_output(["ping", "-c", "1", host])
         return result
     except subprocess.CalledProcessError:
@@ -32,7 +33,9 @@ def ping():
 @app.route("/hello")
 def hello():
     name = request.args.get("name", "user")
+    # Protection XSS avec escape
     return f"<h1>Hello {escape(name)}</h1>"
 
 if __name__ == "__main__":
+    # Debug désactivé
     app.run(debug=False)
