@@ -1,0 +1,30 @@
+name: DevSecOps Pipeline
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.11
+
+    - name: Install dependencies
+      run: pip install flask werkzeug markupsafe bandit safety
+
+    - name: Static code analysis (SAST)
+      run: bandit -r .
+
+    - name: Dependency security scan
+      run: safety check
+
+    - name: Build Docker image
+      run: docker build -t flaskbackend:latest .
